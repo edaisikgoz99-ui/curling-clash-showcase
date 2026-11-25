@@ -6,26 +6,30 @@
 
 Curling Clash, Flutter ve Flame ile geliştirilmiş, dikey ekran mobil bir curling
 oyunudur. Taş tek bir fizik dünyasında kayar; aynı dünya, hazır bir 3B motor
-kullanılmadan yazılmış perspektif kamera sistemiyle üç farklı yayın açısından
-çizilir.
+kullanılmadan yazılmış perspektif kamera sistemiyle atıcının gözünden ve üç
+yayın açısından çizilir. Dört ligin her birinin kendi ışıklandırması olan
+ayrı bir salonu vardır.
 
-![Ana menü, oyun modu ve taş seçimi](images/akis.jpg)
+![Ana menü, lig seçimi, oyun modu ve taş seçimi](images/akis.jpg)
 
 ## Öne çıkanlar
 
 | | |
 |---|---|
-| **Kendi 3B çizim hattı** | Salonun tamamı (buz, bariyerler, 11 basamaklı tribünler, çatı makasları, duvarlar) Flutter `Canvas` üzerinde, elle yazılmış bir iğne deliği kamerayla projekte edilir. Hazır 3B motor yoktur. |
-| **Tek dünya, tek fizik, üç kamera** | Takip kamerası, home arkası kamera ve tepe görünümü aynı dünya koordinatlarını okur. Kamera değişince hiçbir nesne yeniden oluşturulmaz. |
+| **Kendi 3B çizim hattı** | Salonun tamamı (buz, LED panolar, 14 basamaklı tribünler, çatı makasları, duvarlar) Flutter `Canvas` üzerinde, elle yazılmış bir iğne deliği kamerayla projekte edilir. Hazır 3B motor yoktur. |
+| **Tek dünya, tek fizik, dört bakış** | Atıcının gözü, takip kamerası, home arkası kamera ve tepe görünümü aynı dünya koordinatlarını okur. Kamera değişince hiçbir nesne yeniden oluşturulmaz. |
+| **Dört lig, dört salon** | Oyun her ligde aynıdır; lig yükseldikçe saha %12 uzar ve salonun ışıkları renklenir: akan LED şeritler, renkli tavan ışıkları, tribünlerin üstünde gezen spotlar, seyircide ışık çubukları. |
+| **Yaşayan salon** | Bariyerler LED ekrandır ve atışa göre mesaj verir; yayın kameralarının başlıkları taşı izler; tavandaki flamalar salınır; seyirci heyecana göre ayağa kalkıp zıplar, bayrak sallar. |
+| **Renderlanmış süpürücüler** | Süpürücüler Blender'da pozlanıp oyunun kamera açılarından renderlanır, formaları taşın rengine boyanır. Durum makinesi (bekleme, kayma, süpürme, hızlı süpürme, toparlanma) taşın hızına ve süpürme gücüne bağlıdır. |
 | **Fizik ile sunumun ayrılması** | Fizik yazar, çizim yalnızca okur. Çizim katmanı taş konumlarını hiçbir koşulda değiştirmez. |
-| **Malzeme sistemi** | Çelik tribünler, dört ayrıntı seviyesinde önceden süzülmüş bir doku atlasından, dünya koordinatlı doku eşlemesiyle ve tribün başına tek çizim çağrısıyla çizilir. |
+| **Malzeme sistemi ve toplu çizim** | Çelik tribünler, dört ayrıntı seviyesinde önceden süzülmüş bir doku atlasından, dünya koordinatlı doku eşlemesiyle çizilir. Binlerce seyirci ve bütün ışık huzmeleri hazır köşe tamponlarına yazılır: tribün başına tek, ışık için tek çizim çağrısı. |
 | **İki süpürücülü ritim kontrolü** | Ekranda düğme yoktur: ekranın iki yarısı iki süpürücüdür. Vuruş ritmi sürtünmeyi, iki taraf arasındaki fark taşın yönünü belirler. |
-| **Prosedürel ses** | 23 ses efektinin tamamı kayıt kullanılmadan, sinüs bileşenleri ve süzülmüş gürültüden kodla üretilir. |
+| **Prosedürel ses** | Oyunun ses efektleri kayıt kullanılmadan, sinüs bileşenleri ve süzülmüş gürültüden kodla üretilir; seyircinin alkış ve tepkileri lisanslı kayıtlardan kesilmiştir. |
 | **Tam oyun döngüsü** | Altın ekonomisi, taş yükseltmeleri, dört lig, günlük görevler, bilgisayar rakip, yerel iki oyunculu mod, adım adım öğretici ve Türkçe / İngilizce dil desteği. |
 
-Ölçek: 135 Dart dosyası, yaklaşık 36.000 satır; çizim hattının çekirdeği tek
-başına 2.600 satır. Kamera projeksiyonu, süpürme modeli, altın ve ekonomi
-kuralları birim testleriyle doğrulanır.
+Ölçek: 149 Dart dosyası, yaklaşık 42.000 satır; salonun çizimi tek başına
+5.200 satır. Kamera projeksiyonu, süpürme modeli, lig salonları, altın ve
+ekonomi kuralları 350'den fazla birim testiyle doğrulanır.
 
 ## Oynanış
 
@@ -34,7 +38,7 @@ kuralları birim testleriyle doğrulanır.
 1. **Atış:** taş tutulur, aşağı çekilerek güç, yana kaydırılarak yön verilir ve bırakılır.
 2. **Takip:** kamera taşın arkasından ilerler; salon akar, home uzaktan yaklaşır.
 3. **Süpürme:** ekranın sol yarısı sol süpürücüyü, sağ yarısı sağ süpürücüyü çalıştırır. Yoldaki altınlar toplanır.
-4. **Home:** taş home'a yaklaşınca yayın home arkası kameraya geçer; taşlar durunca sonuç tepeden gösterilir ve halkaya göre puan verilir.
+4. **Home:** taş home'a yaklaşınca yayın home arkası kameraya geçer; taşlar durunca sonuç tepeden gösterilir ve halkaya göre puan verilir. İyi atışta LED panolar mesaj verir; rakibin taşını home'dan çıkaran atış rozetini ve altınını alır.
 
 ```mermaid
 stateDiagram-v2
@@ -44,6 +48,15 @@ stateDiagram-v2
     TepeKamerasi --> TakipKamerasi: sıradaki taş
     TepeKamerasi --> [*]: maç bitti
 ```
+
+## Ligler ve salon
+
+![Dört ligin salonu: Çaylak, Profesyonel, Elit, Buz Efsanesi](images/ligler.jpg)
+
+Dört lig de oynanabilir; lig puanı yalnızca sıralamayı belirler. Buz, çizgiler
+ve fizik her ligde aynıdır. Lig yükseldikçe saha biraz uzar (×1,00 / 1,12 /
+1,24 / 1,36) ve salon daha renkli ışıklandırılır. LED panoların rengi buzun
+yalnızca kenarlarına yansır; home ve atış hattı her ligde temiz buzdur.
 
 ## Mimari
 
@@ -137,11 +150,15 @@ Teknik notlar:
   kenar parlaması titremek yerine sönümlenir.
 - **Çizim sırası.** Derinlik tamponu yoktur; katmanlar uzaktan yakına sabit
   sırayla çizilir.
+- **Toplu çizim.** Seyirciler ve ışık huzmeleri tek tek çizilmez; köşeleri
+  hazır tamponlara yazılır ve tek çağrıda çizilir. Resmin dışında kalan
+  flama, kamera ve huzmeler atlanır.
 
 ```mermaid
 flowchart LR
-    A[Çatı] --> B[Bitiş duvarı] --> C[Tribünler ve seyirciler] --> D[Buz]
-    D --> E[Çizgiler ve home] --> F[Bariyerler] --> G[Sis ve ışık]
+    A[Çatı] --> B[Bitiş duvarı] --> C[Tribünler ve seyirciler]
+    C --> C2[Flamalar ve yayın kameraları] --> D[Buz]
+    D --> E[Çizgiler ve home] --> F[LED panolar] --> G[Sis ve ışık]
     G --> H[Altınlar, taşlar, süpürücüler]
 ```
 
@@ -211,10 +228,11 @@ doğru geri itilir ve kamera kısa bir sarsıntı verir.
 
 Her olayın kendi sesi vardır: taşı tutma, güç ve yön çentikleri, bırakma,
 hıza bağlı kayma uğultusu, fırça vuruşları, tek altın ve çoklu altın, taş
-çarpışması, puan, seyirci ve maç sonu. Sesler oynatıcı havuzlarından çalınır;
-aynı anda birden çok ses birbirini kesmeden duyulur. Ses dosyalarını üreten
-betik projenin parçasıdır, bu yüzden bütün ses seti tek komutla yeniden
-üretilebilir veya ayarlanabilir.
+çarpışması, puan, seyirci ve maç sonu. Kısa efektler sabit sayıda düşük
+gecikmeli oynatıcıdan çalınır; aynı anda birden çok ses birbirini kesmeden
+duyulur ve uzun bir süpürme ses kanallarını tüketmez. Atış sürerken stadyum
+uğultusu alkışın altında kalır. Efektleri üreten betik projenin parçasıdır,
+bu yüzden ses seti tek komutla yeniden üretilebilir veya ayarlanabilir.
 
 ## Ekonomi ve ilerleme
 
@@ -222,7 +240,7 @@ betik projenin parçasıdır, bu yüzden bütün ses seti tek komutla yeniden
 |---|---|
 | Buzdaki altın | +5 |
 | Dış halka / beyaz / kırmızı / merkez | +5 / +10 / +15 / +25 |
-| Rakip taşı home'dan çıkarmak | taş başına +25 |
+| Rakip taşı home'dan çıkarmak | +50 (altınlar tek tek keseye uçar) |
 | Maçı kazanmak | +100 |
 | Günlük görevler | +30 / +50 / +100 |
 
@@ -232,8 +250,9 @@ açılır. Lig yükseldikçe saha uzar ve bilgisayar rakip güçlenir.
 ## Teknoloji
 
 - Flutter (Dart), Flame oyun döngüsü
-- Çizim: `Canvas.drawVertices`, `ImageShader`, çalışma zamanında üretilen doku atlası
-- Ses: havuzlu oynatıcılar, Python ile üretilen ses seti
+- Çizim: `Canvas.drawVertices`, `Vertices.raw`, `ImageShader`, çalışma zamanında üretilen doku atlası
+- Görseller: süpürücüler, yayın kamerası ve flamalar Blender (Cycles) ile renderlanır
+- Ses: düşük gecikmeli oynatıcılar, Python ile üretilen ses seti
 - Hedefler: Android ve web
 
 ---
